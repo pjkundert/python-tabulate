@@ -257,6 +257,21 @@ def test_simple_with_sep_line():
     assert_equal(expected, result)
 
 
+def test_orgtbl_with_sep_line():
+    "Output: orgtbl with headers and separating line"
+    expected = "\n".join(
+        [
+            "| strings   |   numbers |",
+            "|-----------+-----------|",
+            "| spam      |   41.9999 |",
+            "|-----------+-----------|",
+            "| eggs      |  451      |",
+        ]
+    )
+    result = tabulate(_test_table_with_sep_line, _test_table_headers, tablefmt="orgtbl")
+    assert_equal(expected, result)
+
+
 def test_readme_example_with_sep():
     table = [["Earth", 6371], ["Mars", 3390], SEPARATING_LINE, ["Moon", 1737]]
     expected = "\n".join(
@@ -308,6 +323,28 @@ def test_simple_multiline_2_with_sep_line():
         ["spam", "multiline\nworld"],
     ]
     result = tabulate(table, headers="firstrow", stralign="center", tablefmt="simple")
+    assert_equal(expected, result)
+
+
+def test_orgtbl_multiline_2_with_sep_line():
+    "Output: simple with multiline cells"
+    expected = "\n".join(
+        [
+            "|  key  |   value   |",
+            "|-------+-----------|",
+            "|  foo  |    bar    |",
+            "|-------+-----------|",
+            "| spam  | multiline |",
+            "|       |   world   |",
+        ]
+    )
+    table = [
+        ["key", "value"],
+        ["foo", "bar"],
+        SEPARATING_LINE,
+        ["spam", "multiline\nworld"],
+    ]
+    result = tabulate(table, headers="firstrow", stralign="center", tablefmt="orgtbl")
     assert_equal(expected, result)
 
 
@@ -2652,6 +2689,13 @@ def test_floatfmt():
     assert_equal(expected, result)
 
 
+def test_floatfmt_thousands():
+    "Output: floating point format"
+    result = tabulate([["1.23456789"], [1.0], ["1,234.56"]], floatfmt=".3f", tablefmt="plain")
+    expected = "   1.235\n   1.000\n1234.560"
+    assert_equal(expected, result)
+
+
 def test_floatfmt_multi():
     "Output: floating point format different for each column"
     result = tabulate(
@@ -2723,6 +2767,32 @@ def test_missingval_multi():
         tablefmt="plain",
     )
     expected = "Alice  Bob  Charlie\nn/a    ?"
+    assert_equal(expected, result)
+
+
+def test_column_emptymissing_deduction():
+    "Missing or empty/blank values shouldn't change type deduction of rest of column"
+    from fractions import Fraction
+
+    test_table = [
+        [None, "1.23423515351", Fraction(1, 3)],
+        [Fraction(56789, 1000000), 12345.1, b"abc"],
+        ["", b"", None],
+        [Fraction(10000, 3), None, ""],
+    ]
+    result = tabulate(
+        test_table,
+        floatfmt=",.5g",
+        missingval="?",
+    )
+    print(f"\n{result}")
+    expected = """\
+------------  -----------  ---
+    ?              1.2342  1/3
+    0.056789  12,345       abc
+                           ?
+3,333.3            ?
+------------  -----------  ---"""
     assert_equal(expected, result)
 
 
