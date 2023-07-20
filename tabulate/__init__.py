@@ -1,4 +1,5 @@
 """Pretty-print tabular data."""
+import logging
 
 from collections import namedtuple
 from collections.abc import Iterable, Sized
@@ -27,6 +28,8 @@ try:
 except ImportError:
     pass  # running __init__.py as a script, AppVeyor pytests
 
+
+log = logging.getLogger( "tabulate" )
 
 # minimum extra space in headers
 MIN_PADDING = 2
@@ -922,9 +925,20 @@ def _type(string, has_invisible=True, numparse=True):
         return str
     elif _isbool(string):
         return bool
-    elif numparse and _isint(string):
+    elif numparse and (
+        _isint(string) or (
+            isinstance(string, str)
+            and _isnumber_with_thousands_separator(string)
+            and '.' not in string 
+        )
+    ):
         return int
-    elif numparse and _isnumber(string):
+    elif numparse and (
+        _isnumber(string) or (
+            isinstance(string, str)
+            and _isnumber_with_thousands_separator(string)
+        )
+    ):
         return float
     elif isinstance(string, bytes):
         return bytes
@@ -1242,12 +1256,15 @@ def _format(val, valtype, floatfmt, intfmt, missingval="", has_invisible=True):
         except (TypeError, UnicodeDecodeError):
             return str(val)
     elif valtype is float:
+        log.warning( f"Formatting float: {val!r}" )
         is_a_colored_number = has_invisible and isinstance(val, (str, bytes))
         if is_a_colored_number:
             raw_val = _strip_ansi(val)
             formatted_val = format(float(raw_val), floatfmt)
             return val.replace(raw_val, formatted_val)
         else:
+            if isinstance(val,str) and ',' in val:
+                val = val.replace(',', '')  # handle thousands-separators
             return format(float(val), floatfmt)
     else:
         return f"{val}"
