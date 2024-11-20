@@ -1,4 +1,5 @@
 # update contributors and CHANGELOG in README
+python -m pip install pre-commit
 python -m pre_commit run -a # and then commit changes
 tox -e py39-extra,py310-extra,py311-extra,py312-extra,py313-extra
 # tag version release
