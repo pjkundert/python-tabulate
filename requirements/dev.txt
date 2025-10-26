@@ -1,0 +1,11 @@
+build
+pre-commit
+setuptools		>=77.0.3
+setuptools_scm[toml]	>=3.4.3
+wheel
+flake8
+pytest
+tox
+# for benchmark/benchmark.py
+prettytable
+texttable
