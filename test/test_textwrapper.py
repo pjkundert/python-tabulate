@@ -177,7 +177,7 @@ def test_wrap_color_line_longword():
 
 
 def test_wrap_color_line_longword_zerowidth():
-    """Lines with zero-width symbols (eg. accents) must include those symbols with the prior symbol.
+    """Lines with zero-width symbols (accents) must include those symbols with the prior symbol.
     Let's exercise the calculation where the available symbols never satisfy the available width,
     and ensure chunk calculation succeeds and ANSI colors are maintained.
 
@@ -199,7 +199,10 @@ def test_wrap_color_line_longword_zerowidth():
         skip("test_wrap_wide_char is skipped")
 
     # Exactly filled, with a green zero-width segment at the end.
-    data = "This_is_A\u20DD_\033[31mte\u0301st_string_\u200bto_te\u0301\u0308st_a\u0308ccent\033[32m\u200b\033[0m"
+    data = (
+        "This_is_A\u20DD_\033[31mte\u0301st_string_\u200b"
+        "to_te\u0301\u0308st_a\u0308ccent\033[32m\u200b\033[0m"
+    )
 
     expected = [
         "This_is_A\u20DD_\033[31mte\u0301\033[0m",
