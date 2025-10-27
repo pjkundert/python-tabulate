@@ -14,7 +14,7 @@ export TOX_OPTS		?= -e py39-extra,py310-extra,py311-extra,py312-extra,py313-extr
 export PYTEST		?= $(PYTHON) -m pytest
 export PYTEST_OPTS	?= # -vv --capture=no
 
-VERSION			= $(shell $(PYTHON) -c "exec(open('tabulate/version.py').read()); print('.'.join(map(str, __version_tuple__[:-2])))" )
+VERSION			= $(shell $(PYTHON) -c "exec(open('tabulate/version.py').read()); print('.'.join(map(str, __version_tuple__[:3])))" )
 VERSION_FULL		= $(shell $(PYTHON) -c "exec(open('tabulate/version.py').read()); print(__version__)" )
 WHEEL			= dist/tabulate_slip39-$(VERSION_FULL)-py3-none-any.whl
 VENV			= $(CURDIR)-$(VERSION)-$(PYTHON_V)
