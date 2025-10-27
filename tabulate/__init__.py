@@ -1638,7 +1638,13 @@ def _normalize_tabular_data(tabular_data, headers, showindex="default"):
     return rows, headers, headers_pad
 
 
-def _wrap_text_to_colwidths(list_of_lists, colwidths, numparses=True, break_long_words=_BREAK_LONG_WORDS, break_on_hyphens=_BREAK_ON_HYPHENS):
+def _wrap_text_to_colwidths(
+    list_of_lists,
+    colwidths,
+    numparses=True,
+    break_long_words=_BREAK_LONG_WORDS,
+    break_on_hyphens=_BREAK_ON_HYPHENS,
+):
     if len(list_of_lists):
         num_cols = len(list_of_lists[0])
     else:
@@ -1655,7 +1661,11 @@ def _wrap_text_to_colwidths(list_of_lists, colwidths, numparses=True, break_long
                 continue
 
             if width is not None:
-                wrapper = _CustomTextWrap(width=width, break_long_words=break_long_words, break_on_hyphens=break_on_hyphens)
+                wrapper = _CustomTextWrap(
+                    width=width,
+                    break_long_words=break_long_words,
+                    break_on_hyphens=break_on_hyphens,
+                )
                 casted_cell = str(cell)
                 wrapped = [
                     "\n".join(wrapper.wrap(line))
@@ -2258,7 +2268,11 @@ def tabulate(
 
         numparses = _expand_numparse(disable_numparse, num_cols)
         list_of_lists = _wrap_text_to_colwidths(
-            list_of_lists, maxcolwidths, numparses=numparses, break_long_words=break_long_words, break_on_hyphens=break_on_hyphens
+            list_of_lists,
+            maxcolwidths,
+            numparses=numparses,
+            break_long_words=break_long_words,
+            break_on_hyphens=break_on_hyphens,
         )
 
     if maxheadercolwidths is not None:
@@ -2272,7 +2286,11 @@ def tabulate(
 
         numparses = _expand_numparse(disable_numparse, num_cols)
         headers = _wrap_text_to_colwidths(
-            [headers], maxheadercolwidths, numparses=numparses, break_long_words=break_long_words, break_on_hyphens=break_on_hyphens
+            [headers],
+            maxheadercolwidths,
+            numparses=numparses,
+            break_long_words=break_long_words,
+            break_on_hyphens=break_on_hyphens,
         )[0]
 
     # empty values in the first column of RST tables should be escaped (issue #82)
@@ -2737,46 +2755,32 @@ class _CustomTextWrap(textwrap.TextWrapper):
             space_left = width - cur_len
 
         # If we're allowed to break long words, then do so: put as much
-        # of the next chunk onto the current line as will fit.
-
-        # Reverted the broken ANSI code handling stuff to fix wcwidth handling
-        # - Doesn't use self._lend, infinite loops
-        # - doesn't locate chunks correctly b/c could be split by ANSI codes
-        # 
-        # if self.break_long_words and space_left > 0:
-        #     # Tabulate Custom: Build the string up piece-by-piece in order to
-        #     # take each charcter's width into account
-        #     chunk = reversed_chunks[-1]
-        #     # Only count printable characters, so strip_ansi first, index later.
-        #     for i in range( 1, space_left + 1 ):
-        #         if self._len(_strip_ansi(chunk)[:i]) > space_left:
-        #             break
-        #
-        #     # Consider escape codes when breaking words up
-        #     total_escape_len = 0
-        #     last_group = 0
-        #     if _ansi_codes.search(chunk) is not None:
-        #         for group, _, _, _ in _ansi_codes.findall(chunk):
-        #             escape_len = len(group)
-        #             if (
-        #                 group
-        #                 in chunk[last_group : i + total_escape_len + escape_len - 1]
-        #             ):
-        #                 total_escape_len += escape_len
-        #                 found = _ansi_codes.search(chunk[last_group:])
-        #                 last_group += found.end()
-        #     cur_line.append(chunk[: i + total_escape_len - 1])
-        #     reversed_chunks[-1] = chunk[i + total_escape_len - 1 :]
-
-        if self.break_long_words: # and space_left > 0:
+        # of the next chunk onto the current line as will fit.  Be careful
+        # of empty chunks after ANSI codes removed.
+        chunk = reversed_chunks[-1]
+        chunk_noansi = _strip_ansi(chunk)
+        if self.break_long_words and chunk_noansi:
             # Tabulate Custom: Build the string up piece-by-piece in order to
             # take each charcter's width into account
-            chunk = reversed_chunks[-1]
-            i = 1
-            while self._len(chunk[:i]) <= space_left:
-                i = i + 1
-            cur_line.append(chunk[: i - 1])
-            reversed_chunks[-1] = chunk[i - 1 :]
+            # Only count printable characters, so strip_ansi first, index later.
+            for i in range(1, len(chunk_noansi) + 1):
+                if self._len(chunk_noansi[:i]) > space_left:
+                    break
+            # Consider escape codes when breaking words up
+            total_escape_len = 0
+            last_group = 0
+            if _ansi_codes.search(chunk) is not None:
+                for group, _, _, _ in _ansi_codes.findall(chunk):
+                    escape_len = len(group)
+                    if (
+                        group
+                        in chunk[last_group : i + total_escape_len + escape_len - 1]
+                    ):
+                        total_escape_len += escape_len
+                        found = _ansi_codes.search(chunk[last_group:])
+                        last_group += found.end()
+            cur_line.append(chunk[: i + total_escape_len - 1])
+            reversed_chunks[-1] = chunk[i + total_escape_len - 1 :]
 
         # Otherwise, we have to preserve the long word intact.  Only add
         # it to the current line if there's nothing already there --
