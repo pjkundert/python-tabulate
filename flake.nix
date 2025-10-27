@@ -13,6 +13,8 @@
 
         # Create Python environments with required packages
         mkPythonEnv = pythonPkg: pythonPkg.withPackages (ps: with ps; [
+          pip
+          build
           pytest
           tox
           numpy

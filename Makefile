@@ -31,17 +31,19 @@ help:
 	@echo "  venv      Create and start a Python venv using the available Python interpreter"
 	@echo "  venv-...  Make a target using the venv environment"
 	@echo
-	@echo "For example, to run tox tests in a Nix-supplied Python venv:"
+	@echo "For example, to build, create venv run tox tests in a Nix-supplied Python:"
 	@echo
-	@echo "  make nix-venv-test"
+	@echo "  make nix-build nix-venv-test"
 	@echo
 
-.PHONY: help wheel install test bench analyze types venv Makefile FORCE
+.PHONY: help wheel build install test bench analyze types venv Makefile FORCE
 
 wheel:			$(WHEEL)
 
-$(WHEEL):		FORCE
-	$(PYTHON) -m build
+$(WHEEL):		build FORCE
+
+build:
+	$(PYTHON) -m build .
 	@ls -last dist
 
 # Install from wheel, including all optional extra dependencies (doesn't include dev)

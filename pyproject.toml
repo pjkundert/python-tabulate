@@ -37,4 +37,3 @@ packages = ["tabulate"]
 
 [tool.setuptools_scm]
 write_to = "tabulate/version.py"
-local_scheme = "no-local-version"
