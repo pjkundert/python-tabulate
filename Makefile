@@ -59,6 +59,9 @@ unit-%:
 test:
 	$(TOX) $(TOX_OPTS)
 
+lint:
+	python -m pre_commit run -a
+
 bench:
 	$(PYTHON) benchmark/benchmark.py
 
@@ -70,7 +73,7 @@ analyze:
 types:
 	mypy .
 
-# 
+#
 # Nix and VirtualEnv build, install and activate
 #
 #     Create, start and run commands in "interactive" shell with a python venv's activate init-file.

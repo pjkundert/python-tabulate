@@ -10,7 +10,7 @@
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
-        
+
         # Create Python environments with required packages
         mkPythonEnv = pythonPkg: pythonPkg.withPackages (ps: with ps; [
           pytest
